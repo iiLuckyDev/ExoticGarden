@@ -106,9 +106,9 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
 
         int minecraftVersion = PaperLib.getMinecraftVersion();
 
-        registerItems();
-
         setupCompatibility(minecraftVersion);
+
+        registerItems();
 
         new AndroidListener(this);
         new PlantsListener(this);
@@ -117,7 +117,15 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
     private void setupCompatibility(int minecraftVersion) {
         angryVillager = minecraftVersion >= 1170 ? Particle.valueOf("ANGRY_VILLAGER") : Particle.valueOf("VILLAGER_ANGRY");
         angryVillager = minecraftVersion >= 1170 ? Particle.valueOf("ANGRY_VILLAGER") : Particle.valueOf("VILLAGER_ANGRY");
-        grass = minecraftVersion >= 1203 ? Material.getMaterial("SHORT_GRASS") : Material.getMaterial("GRASS");
+        grass = minecraftVersion >= 1203 ? Material.matchMaterial("SHORT_GRASS") : Material.matchMaterial("GRASS");
+
+        if (grass == null) {
+            grass = Material.matchMaterial("GRASS");
+        }
+
+        if (grass == null) {
+            grass = Material.GRASS_BLOCK;
+        }
     }
 
     private void registerItems() {
