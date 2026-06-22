@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Rotatable;
 
 import io.github.thebusybiscuit.exoticgarden.ExoticGarden;
 import io.github.thebusybiscuit.exoticgarden.Tree;
@@ -149,10 +148,11 @@ public class Schematic {
                                 }
                             }
                             else if (material == Material.PLAYER_HEAD) {
-                                Rotatable s = (Rotatable) block.getBlockData();
-                                s.setRotation(faces[ThreadLocalRandom.current().nextInt(faces.length)]);
-                                block.setBlockData(s);
+                                if (block.getType() != Material.PLAYER_HEAD && block.getType() != Material.PLAYER_WALL_HEAD) {
+                                    continue;
+                                }
 
+                                HeadTextures.setRandomRotation(block, faces);
                                 HeadTextures.setSkinFromHash(block, tree.getTexture(), true);
                                 BlockStorage.store(block, tree.getFruit());
                             }

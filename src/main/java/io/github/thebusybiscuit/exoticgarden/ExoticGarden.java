@@ -1,5 +1,6 @@
 package io.github.thebusybiscuit.exoticgarden;
 
+import io.github.thebusybiscuit.exoticgarden.config.ConfigManager;
 import io.github.thebusybiscuit.exoticgarden.items.BonemealableItem;
 import io.github.thebusybiscuit.exoticgarden.items.Crook;
 import io.github.thebusybiscuit.exoticgarden.items.CustomFood;
@@ -10,6 +11,7 @@ import io.github.thebusybiscuit.exoticgarden.items.Kitchen;
 import io.github.thebusybiscuit.exoticgarden.items.MagicalEssence;
 import io.github.thebusybiscuit.exoticgarden.listeners.AndroidListener;
 import io.github.thebusybiscuit.exoticgarden.listeners.PlantsListener;
+import io.github.thebusybiscuit.exoticgarden.research.ResearchSetup;
 import io.github.thebusybiscuit.exoticgarden.utils.HeadTextures;
 import io.github.thebusybiscuit.slimefun4.api.MinecraftVersion;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
@@ -84,6 +86,7 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
     private ItemGroup drinksItemGroup;
     private ItemGroup magicalItemGroup;
     private Kitchen kitchen;
+    private boolean addonResearchesEnabled;
 
     @Override
     public void onEnable() {
@@ -94,7 +97,8 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
         }
 
         instance = this;
-        cfg = new Config(this);
+        cfg = ConfigManager.load(this);
+        addonResearchesEnabled = ConfigManager.areAddonResearchesEnabled(cfg);
 
         // Setting up bStats
         new Metrics(this, 4575);
@@ -109,6 +113,10 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
         setupCompatibility(minecraftVersion);
 
         registerItems();
+
+        if (addonResearchesEnabled) {
+            ResearchSetup.setup(this);
+        }
 
         new AndroidListener(this);
         new PlantsListener(this);
@@ -138,9 +146,12 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
 
         kitchen = new Kitchen(this, miscItemGroup);
         kitchen.register(this);
-        Research kitchenResearch = new Research(new NamespacedKey(this, "kitchen"), 600, "Kitchen", 30);
-        kitchenResearch.addItems(kitchen);
-        kitchenResearch.register();
+
+        if (addonResearchesEnabled) {
+            Research kitchenResearch = new Research(new NamespacedKey(this, "kitchen"), 600, "Kitchen", 30);
+            kitchenResearch.addItems(kitchen);
+            kitchenResearch.register();
+        }
 
         // @formatter:off
         SlimefunItemStack iceCube = new SlimefunItemStack("ICE_CUBE", "9340bef2c2c33d113bac4e6a1a84d5ffcecbbfab6b32fa7a7f76195442bd1a2", "&bIce Cube");
@@ -275,7 +286,7 @@ public class ExoticGarden extends JavaPlugin implements SlimefunAddon {
             }
         }
 
-        cfg.save();
+        ConfigManager.save(cfg);
 
         for (Tree tree : ExoticGarden.getTrees()) {
             treeFruits.add(tree.getFruitID());

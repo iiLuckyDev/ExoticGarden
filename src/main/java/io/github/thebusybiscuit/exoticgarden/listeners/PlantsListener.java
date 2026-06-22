@@ -15,7 +15,6 @@ import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -106,14 +105,14 @@ public class PlantsListener implements Listener {
                 if ((x < worldLimit && x > -worldLimit) && (z < worldLimit && z > -worldLimit)) {
                     if (PaperLib.isPaper()) {
                         if (PaperLib.isChunkGenerated(world, chunkX, chunkZ)) {
-                            growBush(e, x, z, berry, random, true);
+                            growBush(e, x, z, berry, true);
                         }
                         else {
-                            PaperLib.getChunkAtAsync(world, chunkX, chunkZ).thenRun(() -> growBush(e, x, z, berry, random, true));
+                            PaperLib.getChunkAtAsync(world, chunkX, chunkZ).thenRun(() -> growBush(e, x, z, berry, true));
                         }
                     }
                     else {
-                        growBush(e, x, z, berry, random, false);
+                        growBush(e, x, z, berry, false);
                     }
                 }
             }
@@ -186,18 +185,12 @@ public class PlantsListener implements Listener {
                         BlockStorage.store(blockAbove, berry.getItem());
                         e.getLocation().getBlock().setType(Material.OAK_LEAVES);
                         blockAbove.setType(Material.PLAYER_HEAD);
-                        Rotatable rotatable = (Rotatable) blockAbove.getBlockData();
-                        rotatable.setRotation(faces[ThreadLocalRandom.current().nextInt(faces.length)]);
-                        blockAbove.setBlockData(rotatable);
-
+                        HeadTextures.setRandomRotation(blockAbove, faces);
                         HeadTextures.setSkinFromHash(blockAbove, berry.getTexture(), true);
                         break;
                     default:
                         e.getLocation().getBlock().setType(Material.PLAYER_HEAD);
-                        Rotatable s = (Rotatable) e.getLocation().getBlock().getBlockData();
-                        s.setRotation(faces[ThreadLocalRandom.current().nextInt(faces.length)]);
-                        e.getLocation().getBlock().setBlockData(s);
-
+                        HeadTextures.setRandomRotation(e.getLocation().getBlock(), faces);
                         HeadTextures.setSkinFromHash(e.getLocation().getBlock(), berry.getTexture(), true);
                         break;
                     }
@@ -221,7 +214,7 @@ public class PlantsListener implements Listener {
         }
     }
 
-    private void growBush(ChunkPopulateEvent e, int x, int z, Berry berry, Random random, boolean isPaper) {
+    private void growBush(ChunkPopulateEvent e, int x, int z, Berry berry, boolean isPaper) {
         for (int y = e.getWorld().getMaxHeight(); y > 30; y--) {
             Block current = e.getWorld().getBlockAt(x, y, z);
             if (!current.getType().isSolid() && current.getType() != Material.WATER && berry.isSoil(current.getRelative(BlockFace.DOWN).getType())) {
@@ -238,17 +231,13 @@ public class PlantsListener implements Listener {
                 case FRUIT:
                     if (isPaper) {
                         current.setType(Material.PLAYER_HEAD);
-                        Rotatable s = (Rotatable) current.getBlockData();
-                        s.setRotation(faces[random.nextInt(faces.length)]);
-                        current.setBlockData(s);
+                        HeadTextures.setRandomRotation(current, faces);
                         HeadTextures.setSkinFromHash(current, berry.getTexture(), true);
                     }
                     else {
                         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                             current.setType(Material.PLAYER_HEAD);
-                            Rotatable s = (Rotatable) current.getBlockData();
-                            s.setRotation(faces[random.nextInt(faces.length)]);
-                            current.setBlockData(s);
+                            HeadTextures.setRandomRotation(current, faces);
                             HeadTextures.setSkinFromHash(current, berry.getTexture(), true);
                         });
                     }
@@ -257,9 +246,7 @@ public class PlantsListener implements Listener {
                 case DOUBLE_PLANT:
                     if (isPaper) {
                         current.setType(Material.PLAYER_HEAD);
-                        Rotatable s = (Rotatable) current.getBlockData();
-                        s.setRotation(faces[random.nextInt(faces.length)]);
-                        current.setBlockData(s);
+                        HeadTextures.setRandomRotation(current, faces);
                         HeadTextures.setSkinFromHash(current, berry.getTexture(), true);
                     }
                     else {
@@ -267,9 +254,7 @@ public class PlantsListener implements Listener {
                             BlockStorage.store(current.getRelative(BlockFace.UP), berry.getItem());
                             current.setType(Material.OAK_LEAVES);
                             current.getRelative(BlockFace.UP).setType(Material.PLAYER_HEAD);
-                            Rotatable ss = (Rotatable) current.getRelative(BlockFace.UP).getBlockData();
-                            ss.setRotation(faces[random.nextInt(faces.length)]);
-                            current.getRelative(BlockFace.UP).setBlockData(ss);
+                            HeadTextures.setRandomRotation(current.getRelative(BlockFace.UP), faces);
                             HeadTextures.setSkinFromHash(current.getRelative(BlockFace.UP), berry.getTexture(), true);
                         });
                     }
